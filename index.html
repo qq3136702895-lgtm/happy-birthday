@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>给最爱的你</title>
+    <style>
+        /* ================= 基础重置与星空背景 ================= */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            overflow: hidden; 
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ================= 第一幕：浪漫引导页 ================= */
+        #coverPage {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            z-index: 1000; transition: opacity 1s ease-out;
+        }
+        .start-btn {
+            background: linear-gradient(45deg, #ff758c, #ff7eb3);
+            border: none; color: white; padding: 18px 40px; border-radius: 50px;
+            font-size: 20px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 10px 25px rgba(255, 117, 140, 0.5);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 117, 140, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(255, 117, 140, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 117, 140, 0); }
+        }
+
+        /* ================= 主内容区 ================= */
+        #mainContent { display: none; width: 100%; height: 100%; position: relative; }
+
+        /* ================= 艺术字排版 (强迫症级绝对居中) ================= */
+        .typography-layout {
+            position: absolute; 
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50; 
+            text-align: center; 
+            width: 100%;
+            pointer-events: none; 
+        }
+        
+        /* HAPPPY BIRTHDAY */
+        .text-en { 
+            font-size: 14px; 
+            color: #ffb6c1; 
+            text-transform: uppercase; 
+            opacity: 0.9;
+            letter-spacing: 8px; 
+            text-indent: 8px; /* 居中核心 */
+            display: block;
+            margin-bottom: 15px; 
+        }
+        
+        /* 包睿嘉 */
+        .text-name {
+            font-size: 55px; 
+            font-weight: 900; 
+            font-family: 'Georgia', serif; 
+            background: linear-gradient(45deg, #fbc2eb 0%, #a6c1ee 50%, #fbc2eb 100%);
+            background-size: 200% auto; 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            animation: gradient-shine 3s linear infinite;
+            text-shadow: 0px 4px 15px rgba(251, 194, 235, 0.3); 
+            letter-spacing: 12px; 
+            text-indent: 12px;    /* 居中核心 */
+            display: block;       
+            margin-bottom: 20px;
+        }
+        @keyframes gradient-shine { to { background-position: 200% center; } }
+        
+        /* 生日快乐 (做到最大) */
+        .text-cn { 
+            font-size: 70px; /* 大！做到最大 */
+            color: #ffffff; 
+            font-weight: 900; /* 加粗，更有力量感 */
+            text-shadow: 0 4px 15px rgba(255, 255, 255, 0.4); /* 增加点白光，配合大字号 */
+            letter-spacing: 20px; /* 拉得更开 */
+            text-indent: 20px;    /* 必须加上和 letter-spacing 一样大小的缩进，完美抵消右侧偏移！*/
+            display: block;
+        }
+
+        /* 极客小尾巴 */
+        .geek-footer {
+            position: absolute; bottom: 5%; left: 50%; transform: translateX(-50%);
+            font-family: 'Courier New', monospace; font-size: 14px; color: #ff79c6;
+            background: rgba(0,0,0,0.3); padding: 8px 15px; border-radius: 8px;
+            backdrop-filter: blur(5px); z-index: 50;
+        }
+
+        /* ================= 动态生成的照片样式 ================= */
+        #photoLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+        .dynamic-img {
+            position: absolute;
+            object-fit: cover;
+            opacity: 0; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,255,255,0.15);
+            animation: float-fade 8s ease-in-out forwards;
+        }
+
+        /* 形状池 */
+        .shape-circle { border-radius: 50%; }
+        .shape-round { border-radius: 20px; }
+        .shape-blob { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; animation: float-fade 8s ease-in-out forwards, blob-morph 5s infinite alternate linear; }
+        
+        /* 心形裁剪 */
+        .shape-heart {
+            clip-path: url(#heartClip); 
+            border: none; 
+        }
+        
+        @keyframes blob-morph { 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; } }
+        
+        @keyframes float-fade {
+            0% { opacity: 0; transform: translateY(30px) rotate(var(--rot)) scale(0.9); }
+            15% { opacity: 0.85; transform: translateY(0px) rotate(var(--rot)) scale(1); }
+            80% { opacity: 0.85; transform: translateY(-20px) rotate(var(--rot)) scale(1); }
+            100% { opacity: 0; transform: translateY(-40px) rotate(var(--rot)) scale(0.9); }
+        }
+
+        /* 烟花容器 */
+        #fireworksContainer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <div id="coverPage">
+        <button class="start-btn" id="startBtn">点击开启专属惊喜 ❤️</button>
+    </div>
+
+    <div id="mainContent">
+        
+        <div class="typography-layout">
+            <div class="text-en">HAPPY BIRTHDAY</div>
+            <div class="text-name">包睿嘉</div> 
+            <div class="text-cn">生日快乐</div> </div>
+
+        <div class="geek-footer">while(true) { love++; }</div>
+
+        <div id="photoLayer"></div>
+
+        <canvas id="fireworksContainer"></canvas>
+    </div>
+
+    <audio id="birthdayMusic" loop>
+        <source src="music.mp3" type="audio/flac">
+    </audio>
+
+    <svg width="0" height="0">
+        <defs>
+            <clipPath id="heartClip" clipPathUnits="objectBoundingBox">
+                <path d="M0.5,0.916 C0.4,0.916, 0,0.55, 0,0.25 C0,0.111, 0.111,0, 0.25,0 C0.334,0, 0.4,0.05, 0.5,0.111 C0.6,0.05, 0.666,0, 0.75,0 C0.889,0, 1,0.111, 1,0.25 C1,0.55, 0.6,0.916, 0.5,0.916" />
+            </clipPath>
+        </defs>
+    </svg>
+
+    <script>
+        // ==========================================
+        // 1. 照片库配置区（添加你准备好的 11 张照片名字）
+        // ==========================================
+        const photoList = [
+            'photo1.jpg', 'photo2.jpg', 'photo3.jpg', 'photo4.jpg', 'photo5.jpg',
+            'photo6.jpg', 'photo7.jpg', 'photo8.jpg', 'photo9.jpg', 'photo10.jpg',
+            'photo11.jpg'
+        ];
+
+        // ==========================================
+        // 2. 动态照片引擎
+        // ==========================================
+        const shapes = ['shape-circle', 'shape-round', 'shape-blob', 'shape-heart'];
+        
+        // 严密计算的安全坐标区，全用 top 避开底部导航栏，紧凑围绕中心
+        const safeZones = [
+            { top: '10%', left: '8%' },   
+            { top: '12%', right: '8%' },  
+            { top: '65%', left: '12%' },  
+            { top: '62%', right: '12%' }, 
+            { top: '38%', left: '2%' },   
+            { top: '42%', right: '2%' }   
+        ];
+
+        let currentPhotoIndex = 0;
+
+        function spawnPhoto() {
+            if (photoList.length === 0) return;
+
+            const photoLayer = document.getElementById('photoLayer');
+            const img = document.createElement('img');
+            
+            // 依次获取图片
+            img.src = photoList[currentPhotoIndex];
+            currentPhotoIndex = (currentPhotoIndex + 1) % photoList.length;
+
+            // 随机分配一个形状
+            const shape = shapes[Math.floor(Math.random() * shapes.length)];
+            img.className = `dynamic-img ${shape}`;
+
+            // 随机尺寸 (集中放大，150px 到 200px 之间)
+            const size = Math.floor(Math.random() * 50) + 150; 
+            img.style.width = size + 'px';
+            img.style.height = size + 'px';
+
+            // 随机分配到一个安全位置
+            const zone = safeZones[Math.floor(Math.random() * safeZones.length)];
+            img.style.top = zone.top;
+            if (zone.left) img.style.left = zone.left;
+            if (zone.right) img.style.right = zone.right;
+
+            // 给一点点随机旋转角度 (-15度 到 15度)
+            const rot = Math.floor(Math.random() * 30) - 15;
+            img.style.setProperty('--rot', rot + 'deg');
+
+            // 放入页面
+            photoLayer.appendChild(img);
+
+            // 8秒后动画结束，从页面移除
+            setTimeout(() => { img.remove(); }, 8000);
+        }
+
+        // ==========================================
+        // 3. 页面交互控制
+        // ==========================================
+        document.getElementById('startBtn').addEventListener('click', function() {
+            document.getElementById('birthdayMusic').play();
+
+            var cover = document.getElementById('coverPage');
+            cover.style.opacity = '0';
+            
+            setTimeout(function() {
+                cover.style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                
+                // 页面一出来，先立刻弹 3 张图出来，避免空屏
+                spawnPhoto();
+                setTimeout(spawnPhoto, 800);
+                setTimeout(spawnPhoto, 1600);
+
+                // 之后每隔 2.5 秒，自动飞出一张新照片
+                setInterval(spawnPhoto, 2500);
+                
+                // 启动烟花
+                autoFireWorks();
+            }, 800);
+        });
+
+        // ==========================================
+        // 4. 烟花引擎 (浪漫配色)
+        // ==========================================
+        const canvas = document.getElementById('fireworksContainer');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x; this.y = y; this.color = color;
+                this.radius = Math.random() * 2.5 + 1;
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = Math.random() * 5 + 2;
+                this.vx = Math.cos(angle) * velocity;
+                this.vy = Math.sin(angle) * velocity;
+                this.friction = 0.95; this.gravity = 0.15;
+                this.alpha = 1;
+            }
+            draw() {
+                ctx.save(); ctx.globalAlpha = this.alpha;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color; 
+                ctx.shadowBlur = 8; ctx.shadowColor = this.color; 
+                ctx.fill(); ctx.restore();
+            }
+            update() {
+                this.vx *= this.friction; this.vy *= this.friction;
+                this.vy += this.gravity;
+                this.x += this.vx; this.y += this.vy;
+                this.alpha -= 0.015;
+            }
+        }
+
+        function createFirework(x, y) {
+            // 浪漫色系烟花
+            const colors = ['#ff758c', '#ff7eb3', '#fbc2eb', '#a18cd1', '#f6d365', '#84fab0'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            for (let i = 0; i < 70; i++) particles.push(new Particle(x, y, color));
+        }
+
+        function animateFireworks() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, index) => {
+                if (p.alpha <= 0) particles.splice(index, 1);
+                else { p.update(); p.draw(); }
+            });
+            requestAnimationFrame(animateFireworks);
+        }
+        animateFireworks(); 
+
+        function autoFireWorks() {
+            setTimeout(() => createFirework(window.innerWidth * 0.2, window.innerHeight * 0.3), 500);
+            setTimeout(() => createFirework(window.innerWidth * 0.8, window.innerHeight * 0.4), 1000);
+            setTimeout(() => createFirework(window.innerWidth * 0.5, window.innerHeight * 0.2), 1500);
+            
+            setInterval(() => {
+                const x = window.innerWidth * 0.1 + Math.random() * (window.innerWidth * 0.8);
+                const y = window.innerHeight * 0.1 + Math.random() * (window.innerHeight * 0.4); 
+                createFirework(x, y);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
