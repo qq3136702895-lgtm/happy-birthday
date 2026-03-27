@@ -5,18 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>给最爱的你</title>
     <style>
-        /* ================= 基础重置与星空背景 ================= */
+        /* ================= 基础重置与全局设置 ================= */
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: #fff;
+            background: #0f0c29; color: #fff;
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            overflow: hidden; 
-            height: 100vh;
-            width: 100vw;
+            overflow: hidden; scroll-behavior: smooth;
+        }
+        body.scroll-unlocked { overflow-y: auto; overflow-x: hidden; }
+
+        .bg-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); z-index: -1;
         }
 
-        /* ================= 第一幕：浪漫引导页 ================= */
+        /* ================= 浪漫引导页 ================= */
         #coverPage {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
@@ -36,90 +40,57 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 117, 140, 0); }
         }
 
-        /* ================= 主内容区 ================= */
-        #mainContent { display: none; width: 100%; height: 100%; position: relative; }
+        /* ================= 第一屏：视觉冲击页 ================= */
+        .screen-one { position: relative; width: 100%; height: 100vh; display: none; overflow: hidden; }
 
-        /* ================= 艺术字排版 (强迫症级绝对居中) ================= */
         .typography-layout {
-            position: absolute; 
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 50; 
-            text-align: center; 
-            width: 100%;
-            pointer-events: none; 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 50; text-align: center; width: 100%; pointer-events: none; 
         }
-        
-        /* HAPPPY BIRTHDAY */
         .text-en { 
-            font-size: 14px; 
-            color: #ffb6c1; 
-            text-transform: uppercase; 
-            opacity: 0.9;
-            letter-spacing: 8px; 
-            text-indent: 8px; /* 居中核心 */
-            display: block;
-            margin-bottom: 15px; 
+            font-size: 14px; color: #ffb6c1; text-transform: uppercase; opacity: 0.9;
+            letter-spacing: 8px; text-indent: 8px; display: block; margin-bottom: 15px; 
         }
-        
-        /* 包睿嘉 */
         .text-name {
-            font-size: 55px; 
-            font-weight: 900; 
-            font-family: 'Georgia', serif; 
+            font-size: 55px; font-weight: 900; font-family: 'Georgia', serif; 
             background: linear-gradient(45deg, #fbc2eb 0%, #a6c1ee 50%, #fbc2eb 100%);
-            background-size: 200% auto; 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent;
-            animation: gradient-shine 3s linear infinite;
-            text-shadow: 0px 4px 15px rgba(251, 194, 235, 0.3); 
-            letter-spacing: 12px; 
-            text-indent: 12px;    /* 居中核心 */
-            display: block;       
-            margin-bottom: 20px;
+            background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: gradient-shine 3s linear infinite; text-shadow: 0px 4px 15px rgba(251, 194, 235, 0.3); 
+            letter-spacing: 12px; text-indent: 12px; display: block; margin-bottom: 20px;
         }
         @keyframes gradient-shine { to { background-position: 200% center; } }
-        
-        /* 生日快乐 (做到最大) */
         .text-cn { 
-            font-size: 70px; /* 大！做到最大 */
-            color: #ffffff; 
-            font-weight: 900; /* 加粗，更有力量感 */
-            text-shadow: 0 4px 15px rgba(255, 255, 255, 0.4); /* 增加点白光，配合大字号 */
-            letter-spacing: 20px; /* 拉得更开 */
-            text-indent: 20px;    /* 必须加上和 letter-spacing 一样大小的缩进，完美抵消右侧偏移！*/
-            display: block;
+            font-size: 70px; color: #ffffff; font-weight: 900; 
+            text-shadow: 0 4px 15px rgba(255, 255, 255, 0.4); 
+            letter-spacing: 20px; text-indent: 20px; display: block;
         }
 
-        /* 极客小尾巴 */
-        .geek-footer {
-            position: absolute; bottom: 5%; left: 50%; transform: translateX(-50%);
-            font-family: 'Courier New', monospace; font-size: 14px; color: #ff79c6;
-            background: rgba(0,0,0,0.3); padding: 8px 15px; border-radius: 8px;
-            backdrop-filter: blur(5px); z-index: 50;
+        .scroll-hint {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.7); font-size: 14px; letter-spacing: 2px;
+            z-index: 100; opacity: 0; pointer-events: none;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            transition: opacity 2s ease-in;
         }
+        .scroll-hint.show { opacity: 1; animation: floatDown 2s infinite ease-in-out; }
+        .scroll-arrow { width: 20px; height: 20px; border-right: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(45deg); }
+        @keyframes floatDown { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 10px); } }
 
-        /* ================= 动态生成的照片样式 ================= */
+        /* ====== 照片池与形状样式 ====== */
         #photoLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
         .dynamic-img {
-            position: absolute;
-            object-fit: cover;
-            opacity: 0; 
-            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-            border: 2px solid rgba(255,255,255,0.15);
-            animation: float-fade 8s ease-in-out forwards;
+            position: absolute; object-fit: cover; opacity: 0; 
+            /* 注意：去掉了写死的 clip-path，交由下面的形状 class 控制 */
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5); 
+            animation: float-fade 8s ease-in-out forwards; 
         }
-
-        /* 形状池 */
-        .shape-circle { border-radius: 50%; }
-        .shape-round { border-radius: 20px; }
-        .shape-blob { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; animation: float-fade 8s ease-in-out forwards, blob-morph 5s infinite alternate linear; }
         
-        /* 心形裁剪 */
-        .shape-heart {
-            clip-path: url(#heartClip); 
-            border: none; 
-        }
+        /* 5种随机形状 */
+        .shape-heart { clip-path: url(#heartClip); }
+        .shape-circle { border-radius: 50%; border: 3px solid rgba(255,255,255,0.2); }
+        .shape-round { border-radius: 20px; border: 3px solid rgba(255,255,255,0.2); }
+        .shape-star { clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+        .shape-blob { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; animation: float-fade 8s ease-in-out forwards, blob-morph 5s infinite alternate linear; border: 3px solid rgba(255,255,255,0.2);}
         
         @keyframes blob-morph { 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; } }
         
@@ -130,32 +101,118 @@
             100% { opacity: 0; transform: translateY(-40px) rotate(var(--rot)) scale(0.9); }
         }
 
-        /* 烟花容器 */
+        /* ================= 第二屏：极客告白信 ================= */
+        .screen-two {
+            width: 100%; min-height: 100vh; display: flex;
+            justify-content: center; align-items: center; padding: 40px 15px;
+            position: relative; z-index: 50; display: none; 
+        }
+
+        .terminal-window {
+            width: 100%; max-width: 750px; background: rgba(15, 15, 25, 0.7);
+            border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 1px 1px rgba(255, 117, 140, 0.3);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            overflow: hidden; margin-bottom: 50px; 
+        }
+
+        .terminal-header {
+            background: rgba(255,255,255,0.05); padding: 12px 15px;
+            display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+        .dot.red { background: #ff5f56; }
+        .dot.yellow { background: #ffbd2e; }
+        .dot.green { background: #27c93f; }
+        .terminal-title { flex: 1; text-align: center; color: #888; font-family: 'Courier New', monospace; font-size: 13px; transform: translateX(-24px); }
+
+        .terminal-body { padding: 30px 25px; font-family: 'Courier New', 'PingFang SC', monospace; font-size: 15px; color: #e0e0e0; }
+        
+        .code-keyword { color: #ff79c6; } 
+        .code-string { color: #f1fa8c; }  
+        .code-var { color: #8be9fd; }     
+
+        .letter-content p { 
+            margin-bottom: 18px; text-align: justify; text-indent: 2em; 
+            line-height: 1.8; letter-spacing: 1px;
+        }
+        .letter-content p.no-indent { text-indent: 0; } 
+        .letter-content p.right-align { 
+            text-align: right; text-indent: 0; margin-top: 40px; margin-bottom: 0; color: #ffb6c1; 
+        }
+        
+        .cursor {
+            display: inline-block; width: 10px; height: 18px;
+            background-color: #f8f8f2; vertical-align: middle;
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
         #fireworksContainer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; }
     </style>
 </head>
 <body>
 
+    <div class="bg-layer"></div>
+
     <div id="coverPage">
         <button class="start-btn" id="startBtn">点击开启专属惊喜 ❤️</button>
     </div>
 
-    <div id="mainContent">
-        
+    <div class="screen-one" id="screenOne">
         <div class="typography-layout">
             <div class="text-en">HAPPY BIRTHDAY</div>
             <div class="text-name">包睿嘉</div> 
-            <div class="text-cn">生日快乐</div> </div>
-
-        <div class="geek-footer">while(true) { love++; }</div>
+            <div class="text-cn">生日快乐</div>
+        </div>
 
         <div id="photoLayer"></div>
 
-        <canvas id="fireworksContainer"></canvas>
+        <div class="scroll-hint" id="scrollHint">
+            <span>下滑解密一段情话</span>
+            <div class="scroll-arrow"></div>
+        </div>
     </div>
 
+    <div class="screen-two" id="screenTwo">
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+                <div class="terminal-title">to_ruijia.py</div>
+            </div>
+            
+            <div class="terminal-body">
+                <div style="margin-bottom: 25px; font-size: 16px;">
+                    <span class="code-keyword">while</span> (<span class="code-var">True</span>):<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-var">my_love</span>.<span class="code-keyword">send_to</span>(<span class="code-string">"包睿嘉"</span>)
+                </div>
+
+                <div class="letter-content">
+                    <p class="no-indent">亲爱的乖乖：</p>
+                    
+                    <p>宝宝，生日快乐！🎂不知不觉中又长大了一岁，这是我陪你度过的第一个生日，同时我们已经恋爱了300天！虽然我们在一起才只有300天，但是我想陪你更久。</p>
+                    
+                    <p>刚认识你的时候，我感觉我们没有太多的故事，我也确实没想到，现在你变成了我最在意的人，真的很开心每天都去找你的日子，感觉每天见到你，都能缓解一身的疲惫，虽然我不是一个完美的人，但是我希望有我在的每一天你都是开开心心的。你总是会内耗，新的一岁少一些内耗，多一些自信，这样才能更好的面对以后的生活。你总是说你胖，但是在我眼中你永远是最漂亮的，新的一岁变得更漂亮更自信更加的相信自我。你总说我们离得太远，可是为了你我可以克服地理，可以永远的和你在一起。</p>
+                    
+                    <p>在一起300天里，我们共同经历了喜和悲，我们有时候会吵架，我们两个人都是那么的犟，但是我希望这些是我们恋爱路上的垫脚石，谈恋爱本身确实是一件很累很麻烦的事情，希望我们对方多一些包容，也许热情会随时褪去，我们的新鲜感也会被生活的平淡替代，安全感会因为各种繁琐的小事被击垮，没有人是天生的恋人也没有人一出生就会get到对方所有的点，所以我们更应该互相包容对方，多一些理解，我们要做的是去学习恋爱中遇到问题的处理方式和与对方沟通的能力，这样我们的恋爱才能在一岁又一岁一年又一年中度过。</p>
+
+                    <p>我真的很爱你宝宝，我觉得跟你在一起能让我感到快乐，让我开始表达自己内心，让我觉得这个世界温柔又美好。真的希望我们在一起度过每一岁，希望我们有超级多个300天！爱你爱你爱你宝宝，生日快乐！！🎉🎉🎉🎂🎂🎂🎈🎈🎈300天快乐！！！😚😚😚</p>
+                    
+                    <p class="right-align">爱你的乖乖</p>
+                </div>
+
+                <div style="margin-top: 35px; text-align: left; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 15px;">
+                    <span class="code-keyword">return</span> <span class="code-string">"Forever Yours"</span><span class="cursor"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="fireworksContainer"></canvas>
+
     <audio id="birthdayMusic" loop>
-        <source src="music.mp3" type="audio/flac">
+        <source src="music.flac" type="audio/flac">
     </audio>
 
     <svg width="0" height="0">
@@ -167,21 +224,15 @@
     </svg>
 
     <script>
-        // ==========================================
-        // 1. 照片库配置区（添加你准备好的 11 张照片名字）
-        // ==========================================
         const photoList = [
             'photo1.jpg', 'photo2.jpg', 'photo3.jpg', 'photo4.jpg', 'photo5.jpg',
             'photo6.jpg', 'photo7.jpg', 'photo8.jpg', 'photo9.jpg', 'photo10.jpg',
             'photo11.jpg'
         ];
 
-        // ==========================================
-        // 2. 动态照片引擎
-        // ==========================================
-        const shapes = ['shape-circle', 'shape-round', 'shape-blob', 'shape-heart'];
-        
-        // 严密计算的安全坐标区，全用 top 避开底部导航栏，紧凑围绕中心
+        // 加入更多形状池
+        const shapes = ['shape-heart', 'shape-circle', 'shape-round', 'shape-blob', 'shape-star'];
+
         const safeZones = [
             { top: '10%', left: '8%' },   
             { top: '12%', right: '8%' },  
@@ -190,48 +241,37 @@
             { top: '38%', left: '2%' },   
             { top: '42%', right: '2%' }   
         ];
-
         let currentPhotoIndex = 0;
 
         function spawnPhoto() {
             if (photoList.length === 0) return;
-
             const photoLayer = document.getElementById('photoLayer');
             const img = document.createElement('img');
             
-            // 依次获取图片
             img.src = photoList[currentPhotoIndex];
             currentPhotoIndex = (currentPhotoIndex + 1) % photoList.length;
 
-            // 随机分配一个形状
+            // 随机分配形状
             const shape = shapes[Math.floor(Math.random() * shapes.length)];
             img.className = `dynamic-img ${shape}`;
-
-            // 随机尺寸 (集中放大，150px 到 200px 之间)
-            const size = Math.floor(Math.random() * 50) + 150; 
+            
+            // 放大50%，调整到 225px ~ 300px
+            const size = Math.floor(Math.random() * 75) + 225; 
             img.style.width = size + 'px';
             img.style.height = size + 'px';
 
-            // 随机分配到一个安全位置
             const zone = safeZones[Math.floor(Math.random() * safeZones.length)];
             img.style.top = zone.top;
             if (zone.left) img.style.left = zone.left;
             if (zone.right) img.style.right = zone.right;
 
-            // 给一点点随机旋转角度 (-15度 到 15度)
             const rot = Math.floor(Math.random() * 30) - 15;
             img.style.setProperty('--rot', rot + 'deg');
 
-            // 放入页面
             photoLayer.appendChild(img);
-
-            // 8秒后动画结束，从页面移除
             setTimeout(() => { img.remove(); }, 8000);
         }
 
-        // ==========================================
-        // 3. 页面交互控制
-        // ==========================================
         document.getElementById('startBtn').addEventListener('click', function() {
             document.getElementById('birthdayMusic').play();
 
@@ -240,24 +280,24 @@
             
             setTimeout(function() {
                 cover.style.display = 'none';
-                document.getElementById('mainContent').style.display = 'block';
+                document.getElementById('screenOne').style.display = 'block';
+                document.getElementById('screenTwo').style.display = 'flex'; 
                 
-                // 页面一出来，先立刻弹 3 张图出来，避免空屏
                 spawnPhoto();
                 setTimeout(spawnPhoto, 800);
                 setTimeout(spawnPhoto, 1600);
-
-                // 之后每隔 2.5 秒，自动飞出一张新照片
                 setInterval(spawnPhoto, 2500);
                 
-                // 启动烟花
                 autoFireWorks();
+
+                setTimeout(() => {
+                    document.body.classList.add('scroll-unlocked');
+                    document.getElementById('scrollHint').classList.add('show');
+                }, 8000);
+
             }, 800);
         });
 
-        // ==========================================
-        // 4. 烟花引擎 (浪漫配色)
-        // ==========================================
         const canvas = document.getElementById('fireworksContainer');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -271,6 +311,7 @@
 
         class Particle {
             constructor(x, y, color) {
+                // 修复了致命的语法错误 (移除了 counting)
                 this.x = x; this.y = y; this.color = color;
                 this.radius = Math.random() * 2.5 + 1;
                 const angle = Math.random() * Math.PI * 2;
@@ -283,8 +324,7 @@
             draw() {
                 ctx.save(); ctx.globalAlpha = this.alpha;
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color; 
-                ctx.shadowBlur = 8; ctx.shadowColor = this.color; 
+                ctx.fillStyle = this.color; ctx.shadowBlur = 8; ctx.shadowColor = this.color; 
                 ctx.fill(); ctx.restore();
             }
             update() {
@@ -296,7 +336,6 @@
         }
 
         function createFirework(x, y) {
-            // 浪漫色系烟花
             const colors = ['#ff758c', '#ff7eb3', '#fbc2eb', '#a18cd1', '#f6d365', '#84fab0'];
             const color = colors[Math.floor(Math.random() * colors.length)];
             for (let i = 0; i < 70; i++) particles.push(new Particle(x, y, color));
